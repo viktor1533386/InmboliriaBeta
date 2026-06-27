@@ -1,0 +1,9 @@
+{
+    "name": "project/bienes-raices",
+    "description": "App MVC para Railway",
+    "require": {
+        "php": ">=8.0",
+        "ext-pdo": "*",
+        "ext-pdo_mysql": "*"
+    }
+}
