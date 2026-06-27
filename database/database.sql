@@ -99,7 +99,7 @@ CREATE INDEX `idx_mensajes_email`         ON `mensajes` (`email`);
 --  DATOS DE PRUEBA – Vendedores
 -- ──────────────────────────────────────────
 INSERT INTO `vendedores` (`nombre`, `apellido`, `email`, `telefono`) VALUES
-('Gabriel',    'Gamero',  'gabriel@hogarideal.pe',    '+51 936 338 196'),
+('Gabriel',    'Gamero',  'gabriel@hogarideal.pe',    '+51 999 888 777'),
 ('Jean Pierre','Garcia',  'jeanpierre@hogarideal.pe', '+51 999 888 777'),
 ('Jorge',      'Campos',  'jorge@hogarideal.pe',      '+51 988 777 666'),
 ('Victor',     'Quispe',  'victor@hogarideal.pe',     '+51 977 666 555');

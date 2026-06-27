@@ -62,7 +62,7 @@
         <div class="agent-card">
           <div class="agent-card__avatar">H</div>
           <p class="agent-card__name">Hogar Ideal Perú</p>
-          <p class="agent-card__tel">📞 +51 936 338 196</p>
+          <p class="agent-card__tel">📞 +51 999 888 777</p>
 
           <hr style="border:none;border-top:1px solid var(--border);margin:1rem 0">
           <p style="font-size:.82rem;font-weight:600;color:var(--text-2);margin-bottom:.75rem">Solicitar información</p>

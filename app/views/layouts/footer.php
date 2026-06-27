@@ -44,7 +44,7 @@
       <div>
         <p class="footer__col-title">Contacto</p>
         <ul class="footer__links">
-          <li><a href="tel:+51936338196">+51 999 999 999</a></li>
+          <li><a href="tel:+51999888777">+51 999 888 777</a></li>
           <li><a href="mailto:info@hogarideal.pe">info@hogarideal.pe</a></li>
           <li>Lima, Perú</li>
           <li>Lun–Sáb: 9am – 7pm</li>
