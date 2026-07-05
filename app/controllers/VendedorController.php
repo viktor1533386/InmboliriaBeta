@@ -550,7 +550,7 @@ class VendedorController extends Controller {
     }
 
     // POST /vendedor/nota_supervisor/{id}
-    public function notaSupervisor(string $id = '0'): void {
+    public function nota_supervisor(string $id = '0'): void {
         Middleware::requireRole(['admin', 'supervisor']);
         
         if ($this->isPost()) {
@@ -593,7 +593,7 @@ class VendedorController extends Controller {
     }
 
     // POST /vendedor/reasignar_prospecto/{id}
-    public function reasignarProspecto(string $id = '0'): void {
+    public function reasignar_prospecto(string $id = '0'): void {
         Middleware::requireRole(['admin', 'supervisor']);
         
         if ($this->isPost()) {
