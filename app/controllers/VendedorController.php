@@ -41,7 +41,13 @@ class VendedorController extends Controller {
         $vendedor_id = $vendedorObj->id;
         
         // Métricas
-        $misPropiedades = $propiedadModel->count("vendedor_id = $vendedor_id AND activo = 1");
+        $misPropiedadesResult = $propiedadModel->raw("
+            SELECT COUNT(*) as total 
+            FROM propiedades 
+            WHERE zona_id IN (SELECT zona_id FROM zona_vendedor WHERE vendedor_id = $vendedor_id) 
+            AND activo = 1
+        ");
+        $misPropiedades = !empty($misPropiedadesResult) ? (int)$misPropiedadesResult[0]->total : 0;
         $prospectosEnGestion = $prospectoModel->count("vendedor_id = $vendedor_id AND estado NOT IN ('Nuevo', 'Cerrado_Ganado', 'Cerrado_Perdedor')");
         $prospectosGanados = $prospectoModel->count("vendedor_id = $vendedor_id AND estado = 'Cerrado_Ganado'");
         

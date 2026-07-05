@@ -75,10 +75,17 @@ class ContactoController extends Controller {
                 ]);
 
                 // 3. Crear actividad inicial
+                $comentarioExtra = '';
+                if ($vendedor_asignado_id) {
+                    $comentarioExtra = ' y fue asignado automáticamente por zona.';
+                } else if ($propiedad_id) {
+                    $comentarioExtra = ' (Nota: La zona de la propiedad no tiene vendedores asignados, por lo que quedó pendiente de asignación).';
+                }
+
                 $this->actividad->insert([
                     'prospecto_id' => $prospectoId,
                     'tipo'         => 'Nuevo',
-                    'comentario'   => 'El visitante completó el formulario de contacto' . ($vendedor_asignado_id ? ' y fue asignado automáticamente por zona.' : ''),
+                    'comentario'   => 'El visitante completó el formulario de contacto' . $comentarioExtra,
                     'nuevo_estado' => $estado_inicial
                 ]);
 

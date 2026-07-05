@@ -19,6 +19,7 @@
         <th>Precio</th>
         <th>Características</th>
         <th>Estado</th>
+        <th>Aprobación</th>
         <th>Acciones</th>
       </tr>
     </thead>
@@ -39,7 +40,7 @@
                   $zonaActual = $zonaProp;
         ?>
             <tr>
-              <td colspan="8" style="background:var(--bg-2);font-weight:bold;padding:1rem;color:var(--text)">
+              <td colspan="9" style="background:var(--bg-2);font-weight:bold;padding:1rem;color:var(--text)">
                 📍 Zona: <?= htmlspecialchars($zonaActual) ?>
               </td>
             </tr>
@@ -82,7 +83,20 @@
             <?php endif; ?>
           </td>
           <td>
+            <?php if (($p->estado_aprobacion ?? 'Aprobado') === 'Aprobado'): ?>
+                <span class="badge badge-green">Aprobado</span>
+            <?php elseif (($p->estado_aprobacion ?? 'Aprobado') === 'Rechazado'): ?>
+                <span class="badge badge-gray" style="background:#fecaca;color:#991b1b">Rechazado</span>
+            <?php else: ?>
+                <span class="badge badge-gold" style="background:#fef08a;color:#854d0e">Pendiente</span>
+            <?php endif; ?>
+          </td>
+          <td>
             <a href="<?= BASE_URL ?>/propiedad/detalle/<?= $p->id ?>" class="btn btn-sm" style="background:rgba(27,43,94,.08);color:var(--text)" target="_blank" title="Ver en portal">👁️</a>
+            <?php if (in_array($_SESSION['usuario_rol'] ?? '', ['admin', 'supervisor']) && ($p->estado_aprobacion ?? 'Aprobado') === 'Pendiente'): ?>
+                <a href="<?= BASE_URL ?>/propiedad/aprobar/<?= $p->id ?>" class="btn btn-sm" style="background:#22c55e;color:white" title="Aprobar">✅</a>
+                <a href="<?= BASE_URL ?>/propiedad/rechazar/<?= $p->id ?>" class="btn btn-sm" style="background:#ef4444;color:white" title="Rechazar">❌</a>
+            <?php endif; ?>
             <a href="<?= BASE_URL ?>/propiedad/editar/<?= $p->id ?>" class="btn btn-sm btn-dark" title="Editar">✏️</a>
             <a href="<?= BASE_URL ?>/propiedad/eliminar/<?= $p->id ?>" class="btn btn-sm btn-danger btn-delete" title="Eliminar">🗑️</a>
           </td>

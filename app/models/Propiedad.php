@@ -15,7 +15,7 @@ class Propiedad extends Model {
                 FROM propiedades p
                 LEFT JOIN vendedores v ON p.vendedor_id = v.id
                 LEFT JOIN zonas z ON p.zona_id = z.id
-                WHERE p.activo = 1
+                WHERE p.activo = 1 AND p.estado_aprobacion = 'Aprobado'
                 ORDER BY p.created_at DESC";
         return $this->raw($sql);
     }
@@ -53,7 +53,7 @@ class Propiedad extends Model {
                 FROM propiedades p
                 LEFT JOIN vendedores v ON p.vendedor_id = v.id
                 LEFT JOIN zonas z ON p.zona_id = z.id
-                WHERE p.activo = 1 AND p.tipo = ?
+                WHERE p.activo = 1 AND p.estado_aprobacion = 'Aprobado' AND p.tipo = ?
                 ORDER BY p.created_at DESC";
         return $this->raw($sql, [$tipo]);
     }
@@ -65,7 +65,7 @@ class Propiedad extends Model {
                 FROM propiedades p
                 LEFT JOIN vendedores v ON p.vendedor_id = v.id
                 LEFT JOIN zonas z ON p.zona_id = z.id
-                WHERE p.activo = 1
+                WHERE p.activo = 1 AND p.estado_aprobacion = 'Aprobado'
                 ORDER BY p.created_at DESC
                 LIMIT ?";
         return $this->raw($sql, [$limit]);

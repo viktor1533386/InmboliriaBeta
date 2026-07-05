@@ -99,10 +99,13 @@ class PropiedadController extends Controller {
                 }
 
                 if (empty($errores)) {
-                    // Si es vendedor, forzar que sea el dueño de la propiedad
+                    // Si es vendedor, forzar que sea el dueño de la propiedad y quede pendiente
                     if (($_SESSION['usuario_rol'] ?? '') === 'vendedor') {
                         $vData = $this->vendedor->findOneWhere('usuario_id', $_SESSION['usuario_id']);
                         $datos['vendedor_id'] = $vData ? $vData->id : 0;
+                        $datos['estado_aprobacion'] = 'Pendiente';
+                    } else {
+                        $datos['estado_aprobacion'] = 'Aprobado';
                     }
 
                     $this->propiedad->insert($datos);
@@ -155,6 +158,7 @@ class PropiedadController extends Controller {
                     if (($_SESSION['usuario_rol'] ?? '') === 'vendedor') {
                         $vData = $this->vendedor->findOneWhere('usuario_id', $_SESSION['usuario_id']);
                         $datos['vendedor_id'] = $vData ? $vData->id : 0; // Forzar el ID original
+                        $datos['estado_aprobacion'] = 'Pendiente';
                     }
 
                     $this->propiedad->update((int)$id, $datos);
@@ -175,7 +179,7 @@ class PropiedadController extends Controller {
 
     // GET /propiedad/eliminar/{id}
     public function eliminar(string $id = '0'): void {
-        Middleware::requireRole(['admin', 'supervisor', 'vendedor', 'scrum_master', 'especialista_ti']);
+        Middleware::requireRole(['admin', 'supervisor', 'scrum_master', 'especialista_ti']);
         $propiedad = $this->propiedad->findById((int)$id);
         
         if ($propiedad) {
@@ -191,6 +195,22 @@ class PropiedadController extends Controller {
             $this->propiedad->delete((int)$id);
             $this->flash('success', 'Propiedad eliminada.');
         }
+        $this->redirect('propiedad/admin');
+    }
+
+    // GET /propiedad/aprobar/{id}
+    public function aprobar(string $id = '0'): void {
+        Middleware::requireRole(['admin', 'supervisor']);
+        $this->propiedad->update((int)$id, ['estado_aprobacion' => 'Aprobado']);
+        $this->flash('success', 'Propiedad aprobada exitosamente y ahora es visible en el catálogo.');
+        $this->redirect('propiedad/admin');
+    }
+
+    // GET /propiedad/rechazar/{id}
+    public function rechazar(string $id = '0'): void {
+        Middleware::requireRole(['admin', 'supervisor']);
+        $this->propiedad->update((int)$id, ['estado_aprobacion' => 'Rechazado']);
+        $this->flash('success', 'Propiedad rechazada. No será visible en el catálogo.');
         $this->redirect('propiedad/admin');
     }
 
