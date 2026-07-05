@@ -198,20 +198,74 @@ if (in_array($rolUsuario, ['scrum_master', 'especialista_ti', 'seguridad'])) {
     <script>
     document.addEventListener('DOMContentLoaded', function() {
       const btn = document.getElementById('btn-notificaciones');
-      const dropdown = document.getElementById('dropdown-notificaciones');
-      if (btn) {
+      const drop = document.getElementById('dropdown-notificaciones');
+      
+      if(btn && drop) {
         btn.addEventListener('click', function(e) {
           e.stopPropagation();
-          dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+          drop.style.display = drop.style.display === 'none' ? 'block' : 'none';
+        });
+        
+        document.addEventListener('click', function(e) {
+          if (!btn.contains(e.target) && !drop.contains(e.target)) {
+            drop.style.display = 'none';
+          }
         });
       }
-      document.addEventListener('click', function(e) {
-        if (dropdown && !dropdown.contains(e.target) && e.target !== btn) {
-          dropdown.style.display = 'none';
-        }
-      });
+
+      // Funcionalidad de polling para notificaciones en tiempo real
+      setInterval(function() {
+          fetch('<?= BASE_URL ?>/notificacion/check')
+              .then(res => res.json())
+              .then(data => {
+                  if (data.status === 'success') {
+                      actualizarNotificacionesUI(data.count, data.data);
+                  }
+              })
+              .catch(err => console.error('Error checking notifications', err));
+      }, 15000); // Chequear cada 15 segundos
+
+      function actualizarNotificacionesUI(count, items) {
+          if (count > 0) {
+              // Actualizar el número de la campanita
+              let spanCount = btn.querySelector('span');
+              if (!spanCount) {
+                  spanCount = document.createElement('span');
+                  spanCount.style = "position:absolute;top:-5px;right:-5px;background:#ef4444;color:white;border-radius:50%;width:18px;height:18px;font-size:11px;font-weight:bold;line-height:18px;text-align:center;";
+                  btn.appendChild(spanCount);
+              }
+              spanCount.textContent = count;
+              
+              // Re-renderizar el dropdown
+              let html = `
+                <div style="padding:1rem;border-bottom:1px solid var(--border);font-weight:bold;display:flex;justify-content:space-between;">
+                    <span>Notificaciones</span>
+                    <span style="font-size:0.8rem;color:var(--primary);cursor:pointer;" onclick="window.location='<?= BASE_URL ?>/admin/leer_todas_notificaciones'">Marcar leídas</span>
+                </div>
+              `;
+              items.forEach(n => {
+                  html += `
+                    <a href="<?= BASE_URL ?>/admin/leer_notificacion/${n.id}" style="display:block;padding:1rem;border-bottom:1px solid var(--border);text-decoration:none;color:inherit;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='transparent'">
+                      <div style="font-weight:600;font-size:0.9rem;margin-bottom:0.2rem;color:var(--text);">${n.titulo}</div>
+                      <div style="font-size:0.85rem;color:var(--text-2);line-height:1.4;">${n.mensaje}</div>
+                      <div style="font-size:0.75rem;color:var(--text-3);margin-top:0.4rem;">${n.created_at}</div>
+                    </a>
+                  `;
+              });
+              drop.innerHTML = html;
+          } else {
+              // Quitar la placa si llegó a 0
+              let spanCount = btn.querySelector('span');
+              if (spanCount) spanCount.remove();
+              drop.innerHTML = `
+                <div style="padding:1rem;border-bottom:1px solid var(--border);font-weight:bold;display:flex;justify-content:space-between;">
+                    <span>Notificaciones</span>
+                </div>
+                <div style="padding:1.5rem 1rem;text-align:center;color:var(--text-3);font-size:0.9rem;">No tienes notificaciones nuevas.</div>
+              `;
+          }
+      }
     });
     </script>
-
     <!-- Flash messages are now handled by SweetAlert in the footer -->
     <div class="admin-content">
