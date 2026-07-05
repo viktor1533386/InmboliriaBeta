@@ -105,10 +105,34 @@
     <?php if (in_array($rol, ['supervisor', 'admin'])): ?>
       <div class="card" style="padding:1.5rem; margin-top:1.5rem; background:#fff8f1; border:1px solid #fdba74;">
         <h3 style="color:#c2410c; margin-bottom:1rem;">🔧 Acciones de Supervisor</h3>
-        <p style="font-size:0.9rem; color:#9a3412; margin-bottom:1rem;">Puedes forzar el cambio de estado de este prospecto (por ejemplo, pasarlo a Post-Venta o reabrirlo).</p>
+        
+        <!-- Reasignar Vendedor -->
+        <form method="POST" action="<?= BASE_URL ?>/vendedor/reasignar_prospecto/<?= $prospecto->id ?>" style="margin-bottom:1.5rem; border-bottom:1px solid #fed7aa; padding-bottom:1.5rem;">
+          <label style="display:block;margin-bottom:.3rem;font-size:.9rem; color:#9a3412; font-weight:600;">Reasignar Agente Inmobiliario:</label>
+          <div style="display:flex; gap:.5rem;">
+            <select name="vendedor_id" required style="flex:1; padding:.5rem; border:1px solid #fdba74; border-radius:var(--radius); background:#fff;">
+              <option value="">Seleccione un vendedor...</option>
+              <?php foreach ($vendedores as $v): ?>
+                <option value="<?= $v->id ?>" <?= $prospecto->vendedor_id == $v->id ? 'selected' : '' ?>>
+                  <?= htmlspecialchars($v->nombre . ' ' . $v->apellido) ?>
+                </option>
+              <?php endforeach; ?>
+            </select>
+            <button type="submit" class="btn btn-primary" style="background:#ea580c; border:none; padding:.5rem 1rem;">Reasignar</button>
+          </div>
+        </form>
+
+        <!-- Dejar Nota al Vendedor -->
+        <form method="POST" action="<?= BASE_URL ?>/vendedor/nota_supervisor/<?= $prospecto->id ?>" style="margin-bottom:1.5rem; border-bottom:1px solid #fed7aa; padding-bottom:1.5rem;">
+          <label style="display:block;margin-bottom:.3rem;font-size:.9rem; color:#9a3412; font-weight:600;">Dejar Nota / Mensaje al Agente:</label>
+          <textarea name="comentario" required style="width:100%; padding:.5rem; border:1px solid #fdba74; border-radius:var(--radius); min-height:70px; margin-bottom:.5rem; background:#fff;" placeholder="Ej. Llama a este cliente urgente, busca crédito hipotecario..."></textarea>
+          <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center; background:#ea580c; border:none;">Enviar Nota al Vendedor</button>
+        </form>
+
+        <!-- Forzar Estado -->
         <form method="POST" action="<?= BASE_URL ?>/vendedor/reabrir_prospecto/<?= $prospecto->id ?>">
           <div style="margin-bottom:1rem;">
-            <label style="display:block;margin-bottom:.3rem;font-size:.9rem; color:#9a3412;">Forzar Estado:</label>
+            <label style="display:block;margin-bottom:.3rem;font-size:.9rem; color:#9a3412; font-weight:600;">Forzar Estado del Prospecto:</label>
             <select name="estado_forzado" required style="width:100%;padding:.5rem;border:1px solid #fdba74;border-radius:var(--radius);background:#fff;">
               <option value="">Seleccione un estado...</option>
               <option value="Post_Venta">Post-Venta (Reabrir)</option>
@@ -120,7 +144,7 @@
               <?php endforeach; ?>
             </select>
           </div>
-          <button type="submit" class="btn" style="background:#ea580c; color:#fff; width:100%; justify-content:center;">Cambiar Estado</button>
+          <button type="submit" class="btn" style="background:#c2410c; color:#fff; width:100%; justify-content:center; font-weight:600;">Forzar Estado</button>
         </form>
       </div>
     <?php endif; ?>
@@ -139,30 +163,66 @@
         <button type="button" class="btn btn-sm btn-outline" style="border-color:var(--border);color:var(--text)" onclick="filterTimeline('WhatsApp')">WhatsApp</button>
         <button type="button" class="btn btn-sm btn-outline" style="border-color:var(--border);color:var(--text)" onclick="filterTimeline('Reunion')">Reunión</button>
         <button type="button" class="btn btn-sm btn-outline" style="border-color:var(--border);color:var(--text)" onclick="filterTimeline('Visita')">Visitas</button>
+        <button type="button" class="btn btn-sm btn-outline" style="border-color:var(--border);color:var(--text)" onclick="filterTimeline('Nota_Supervisor')">Notas Sup.</button>
       </div>
 
       <div style="position:relative;padding-left:1.5rem;border-left:2px solid var(--border)">
         <?php foreach ($actividades as $act): ?>
-          <div class="timeline-item" data-type="<?= htmlspecialchars($act->tipo) ?>" style="position:relative;margin-bottom:1.5rem">
-            <!-- Punto del timeline -->
-            <div style="position:absolute;left:-1.85rem;top:.2rem;width:12px;height:12px;border-radius:50%;background:var(--primary)"></div>
+          <?php 
+            // Determinar color e ícono
+            $icon = '📌';
+            $color = 'var(--primary)';
+            $bg = '#f9fafb';
+            $border = 'var(--border)';
             
-            <div style="background:#f9fafb;padding:1rem;border-radius:var(--radius);border:1px solid var(--border)">
-              <div style="display:flex;justify-content:space-between;margin-bottom:.5rem">
-                <div>
-                  <strong style="color:var(--text)"><?= htmlspecialchars($act->tipo) ?></strong>
+            if ($act->tipo === 'Nota_Supervisor') {
+                $icon = '🧑‍💼';
+                $color = '#ea580c';
+                $bg = '#fff8f1';
+                $border = '#fdba74';
+            } elseif ($act->tipo === 'Llamada') {
+                $icon = '📞';
+            } elseif ($act->tipo === 'WhatsApp') {
+                $icon = '💬';
+                $color = '#10b981';
+            } elseif ($act->tipo === 'Email') {
+                $icon = '✉️';
+            } elseif ($act->tipo === 'Reasignacion') {
+                $icon = '🔄';
+                $color = '#6366f1';
+            } elseif ($act->tipo === 'Solicitud de Cierre') {
+                $icon = '🏆';
+                $color = '#eab308';
+                $bg = '#fefce8';
+                $border = '#fef08a';
+            }
+          ?>
+          <div class="timeline-item" data-type="<?= htmlspecialchars($act->tipo) ?>" style="position:relative;margin-bottom:1.5rem">
+            
+            <!-- Punto del timeline -->
+            <div style="position:absolute;left:-2.35rem;top:0;width:28px;height:28px;border-radius:50%;background:<?= $color ?>;color:white;display:flex;align-items:center;justify-content:center;font-size:.85rem;box-shadow:0 0 0 4px white;">
+              <?= $icon ?>
+            </div>
+            
+            <div style="background:<?= $bg ?>;padding:1.25rem;border-radius:var(--radius);border:1px solid <?= $border ?>;box-shadow:0 1px 2px rgba(0,0,0,0.05);">
+              <div style="display:flex;justify-content:space-between;margin-bottom:.75rem;align-items:center;">
+                <div style="display:flex;align-items:center;gap:.5rem;">
+                  <strong style="color:var(--text);font-size:1.05rem;"><?= str_replace('_', ' ', htmlspecialchars($act->tipo)) ?></strong>
                   <?php if (!empty($act->autor_nombre)): ?>
-                    <span style="font-size:.8rem;color:var(--text-3);margin-left:.5rem">por <?= htmlspecialchars($act->autor_nombre) ?></span>
+                    <span style="font-size:.75rem;background:#e5e7eb;color:#374151;padding:.1rem .5rem;border-radius:1rem;font-weight:600;letter-spacing:.02em;"><?= htmlspecialchars(strtoupper($act->autor_nombre)) ?></span>
                   <?php endif; ?>
                 </div>
-                <span style="color:var(--text-2);font-size:.85rem"><?= date('d/m/Y H:i', strtotime($act->created_at)) ?></span>
+                <span style="color:var(--text-3);font-size:.8rem;font-weight:500;display:flex;align-items:center;gap:.2rem;">
+                  🕒 <?= date('d/m/Y H:i', strtotime($act->created_at)) ?>
+                </span>
               </div>
-              <p style="margin:0;color:var(--text-2);font-size:.95rem">
+              <p style="margin:0;color:var(--text-2);font-size:.95rem;line-height:1.6;">
                 <?= nl2br(htmlspecialchars($act->comentario)) ?>
               </p>
               <?php if (!empty($act->nuevo_estado) && $act->nuevo_estado !== $prospecto->estado): ?>
-                <div style="margin-top:.5rem;font-size:.85rem;color:var(--primary)">
-                  → Cambió el estado a <strong><?= htmlspecialchars($act->nuevo_estado) ?></strong>
+                <div style="margin-top:.75rem;font-size:.85rem;color:<?= $color ?>;font-weight:600;display:flex;align-items:center;gap:.3rem;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                  Cambió el estado a <?= htmlspecialchars(str_replace('_', ' ', $act->nuevo_estado)) ?>
                 </div>
               <?php endif; ?>
             </div>

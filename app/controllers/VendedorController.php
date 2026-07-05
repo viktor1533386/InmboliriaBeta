@@ -339,6 +339,11 @@ class VendedorController extends Controller {
             }
         }
 
+        $vendedores = [];
+        if (in_array($_SESSION['usuario_rol'], ['admin', 'supervisor'])) {
+            $vendedores = $this->vendedor->findAll('nombre ASC');
+        }
+
         $this->render('vendedor/prospecto_detalle', [
             'titulo'             => 'Detalle del Prospecto',
             'prospecto'          => $prospecto,
@@ -346,7 +351,8 @@ class VendedorController extends Controller {
             'propiedad'          => $propiedad,
             'estados'            => $estadosPermitidos,
             'rol'                => $_SESSION['usuario_rol'],
-            'solicitudPendiente' => $solicitudPendiente
+            'solicitudPendiente' => $solicitudPendiente,
+            'vendedores'         => $vendedores
         ]);
     }
 
@@ -444,6 +450,22 @@ class VendedorController extends Controller {
                     }
                 }
                 
+                // Notificar a supervisores
+                require_once APP_ROOT . '/app/models/Usuario.php';
+                $usuarioModel = new Usuario();
+                $supervisores = $usuarioModel->findWhere('rol', 'supervisor');
+                if (!empty($supervisores)) {
+                    require_once APP_ROOT . '/app/models/Notificacion.php';
+                    $notifModel = new Notificacion();
+                    foreach ($supervisores as $sup) {
+                        $notifModel->insert([
+                            'usuario_id' => $sup->id,
+                            'titulo' => 'Nueva actividad en prospecto',
+                            'mensaje' => "El vendedor actualizó el prospecto {$prospecto->nombre} con una actividad: {$tipo}."
+                        ]);
+                    }
+                }
+                
                 $this->flash('success', 'Actividad registrada correctamente.');
             }
         }
@@ -522,6 +544,94 @@ class VendedorController extends Controller {
                 $this->flash('success', 'Solicitud de cierre enviada al supervisor correctamente. Se ha notificado al supervisor para su validación.');
             } else {
                 $this->flash('error', 'No tienes permiso para realizar esta acción.');
+            }
+        }
+        $this->redirect('vendedor/detalle/' . $id);
+    }
+
+    // POST /vendedor/nota_supervisor/{id}
+    public function notaSupervisor(string $id = '0'): void {
+        Middleware::requireRole(['admin', 'supervisor']);
+        
+        if ($this->isPost()) {
+            $comentario = $this->sanitize($_POST['comentario'] ?? '');
+            
+            require_once APP_ROOT . '/app/models/Prospecto.php';
+            require_once APP_ROOT . '/app/models/ActividadProspecto.php';
+            
+            $prospectoModel = new Prospecto();
+            $prospecto = $prospectoModel->findById((int)$id);
+            
+            if ($prospecto && !empty($comentario)) {
+                $actividad = new ActividadProspecto();
+                $actividad->insert([
+                    'prospecto_id' => $prospecto->id,
+                    'tipo' => 'Nota_Supervisor',
+                    'comentario' => $comentario,
+                    'nuevo_estado' => $prospecto->estado,
+                    'creado_por' => $_SESSION['usuario_id']
+                ]);
+                
+                // Notificar al vendedor de la nota si tiene vendedor asignado
+                if ($prospecto->vendedor_id) {
+                    $vData = $this->vendedor->findById((int)$prospecto->vendedor_id);
+                    if ($vData) {
+                        require_once APP_ROOT . '/app/models/Notificacion.php';
+                        $notifModel = new Notificacion();
+                        $notifModel->insert([
+                            'usuario_id' => $vData->usuario_id,
+                            'titulo' => 'Nueva nota del Supervisor',
+                            'mensaje' => "Un supervisor dejó una nota en el prospecto {$prospecto->nombre}: " . substr($comentario, 0, 50) . "..."
+                        ]);
+                    }
+                }
+                
+                $this->flash('success', 'Nota de supervisor agregada exitosamente.');
+            }
+        }
+        $this->redirect('vendedor/detalle/' . $id);
+    }
+
+    // POST /vendedor/reasignar_prospecto/{id}
+    public function reasignarProspecto(string $id = '0'): void {
+        Middleware::requireRole(['admin', 'supervisor']);
+        
+        if ($this->isPost()) {
+            $nuevo_vendedor_id = (int)($_POST['vendedor_id'] ?? 0);
+            
+            require_once APP_ROOT . '/app/models/Prospecto.php';
+            require_once APP_ROOT . '/app/models/ActividadProspecto.php';
+            
+            $prospectoModel = new Prospecto();
+            $prospecto = $prospectoModel->findById((int)$id);
+            
+            if ($prospecto && $nuevo_vendedor_id > 0) {
+                $prospectoModel->update($prospecto->id, ['vendedor_id' => $nuevo_vendedor_id]);
+                
+                $vData = $this->vendedor->findById($nuevo_vendedor_id);
+                $nombreVendedor = $vData ? "{$vData->nombre} {$vData->apellido}" : 'Desconocido';
+                
+                $actividad = new ActividadProspecto();
+                $actividad->insert([
+                    'prospecto_id' => $prospecto->id,
+                    'tipo' => 'Reasignacion',
+                    'comentario' => "El supervisor ha reasignado este prospecto a: $nombreVendedor.",
+                    'nuevo_estado' => $prospecto->estado,
+                    'creado_por' => $_SESSION['usuario_id']
+                ]);
+                
+                // Notificar al nuevo vendedor
+                if ($vData) {
+                    require_once APP_ROOT . '/app/models/Notificacion.php';
+                    $notifModel = new Notificacion();
+                    $notifModel->insert([
+                        'usuario_id' => $vData->usuario_id,
+                        'titulo' => 'Nuevo prospecto asignado',
+                        'mensaje' => "El supervisor te ha asignado el prospecto: {$prospecto->nombre}."
+                    ]);
+                }
+                
+                $this->flash('success', 'Prospecto reasignado correctamente.');
             }
         }
         $this->redirect('vendedor/detalle/' . $id);
