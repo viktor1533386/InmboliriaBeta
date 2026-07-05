@@ -28,7 +28,7 @@ class Propiedad extends Model {
                 LEFT JOIN vendedores v ON p.vendedor_id = v.id
                 LEFT JOIN zonas z ON p.zona_id = z.id";
         if ($vendedor_id > 0) {
-            $sql .= " WHERE p.vendedor_id = $vendedor_id";
+            $sql .= " WHERE p.zona_id IN (SELECT zona_id FROM zona_vendedor WHERE vendedor_id = $vendedor_id) OR p.vendedor_id = $vendedor_id";
         }
         $sql .= " ORDER BY p.created_at DESC";
         return $this->raw($sql);
