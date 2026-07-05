@@ -61,6 +61,15 @@ class PropiedadController extends Controller {
             $propiedades = $this->propiedad->todasConVendedor($vendedor_id);
         } else {
             $propiedades = $this->propiedad->todasConVendedor();
+            // Ordenar por zona
+            usort($propiedades, function($a, $b) {
+                $zonaA = $a->zona_nombre ?? 'ZZZ_Sin Zona';
+                $zonaB = $b->zona_nombre ?? 'ZZZ_Sin Zona';
+                if ($zonaA === $zonaB) {
+                    return $b->id <=> $a->id; // ID desc if same zone
+                }
+                return strcmp($zonaA, $zonaB);
+            });
         }
         
         $this->render('propiedades/admin_index', [

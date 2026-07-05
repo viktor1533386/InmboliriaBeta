@@ -30,7 +30,23 @@
           </td>
         </tr>
       <?php else: ?>
-        <?php foreach ($propiedades as $p): ?>
+        <?php 
+          $zonaActual = null;
+          foreach ($propiedades as $p): 
+            if (in_array($_SESSION['usuario_rol'] ?? '', ['admin', 'supervisor'])) {
+                $zonaProp = $p->zona_nombre ?? 'Sin Zona Asignada';
+                if ($zonaActual !== $zonaProp):
+                  $zonaActual = $zonaProp;
+        ?>
+            <tr>
+              <td colspan="8" style="background:var(--bg-2);font-weight:bold;padding:1rem;color:var(--text)">
+                📍 Zona: <?= htmlspecialchars($zonaActual) ?>
+              </td>
+            </tr>
+        <?php 
+                endif;
+            }
+        ?>
         <tr>
           <td style="color:var(--text-3);font-size:.8rem">#<?= $p->id ?></td>
           <td>
@@ -43,10 +59,10 @@
             <?php if ($p->direccion): ?>
               <div style="font-size:.75rem;color:var(--text-3)">📍 <?= htmlspecialchars(substr($p->direccion, 0, 45)) ?></div>
             <?php endif; ?>
-            <?php if (!empty($p->vendedor_nombre)): ?>
-              <div style="font-size:.75rem;color:var(--primary);margin-top:.2rem">👤 Asignado a: <?= htmlspecialchars($p->vendedor_nombre . ' ' . $p->vendedor_apellido) ?></div>
+            <?php if (!empty($p->zona_nombre)): ?>
+              <div style="font-size:.75rem;color:var(--primary);margin-top:.2rem">📍 Asignada a: <?= htmlspecialchars($p->zona_nombre) ?></div>
             <?php elseif (in_array($_SESSION['usuario_rol'] ?? '', ['admin', 'supervisor'])): ?>
-              <div style="font-size:.75rem;color:var(--text-3);margin-top:.2rem">👤 Sin asignar</div>
+              <div style="font-size:.75rem;color:var(--text-3);margin-top:.2rem">📍 Sin zona asignada</div>
             <?php endif; ?>
           </td>
           <td><span class="badge badge-blue"><?= ucfirst($p->tipo) ?></span></td>
