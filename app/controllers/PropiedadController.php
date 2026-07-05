@@ -7,6 +7,9 @@ require_once APP_ROOT . '/core/Middleware.php';
 require_once APP_ROOT . '/app/models/Propiedad.php';
 require_once APP_ROOT . '/app/models/Vendedor.php';
 require_once APP_ROOT . '/app/models/Zona.php';
+require_once APP_ROOT . '/app/models/Usuario.php';
+require_once APP_ROOT . '/app/models/Notificacion.php';
+require_once APP_ROOT . '/core/Mailer.php';
 
 class PropiedadController extends Controller {
 
@@ -109,7 +112,14 @@ class PropiedadController extends Controller {
                     }
 
                     $this->propiedad->insert($datos);
-                    $this->flash('success', 'Propiedad creada correctamente.');
+                    
+                    if (($_SESSION['usuario_rol'] ?? '') === 'vendedor') {
+                        $this->notificarSupervisores($datos['titulo'], 'creada');
+                        $this->flash('success', 'Propiedad creada correctamente. Pendiente de aprobación por un supervisor.');
+                    } else {
+                        $this->flash('success', 'Propiedad creada correctamente.');
+                    }
+                    
                     $this->redirect('propiedad/admin');
                 }
             }
@@ -162,7 +172,14 @@ class PropiedadController extends Controller {
                     }
 
                     $this->propiedad->update((int)$id, $datos);
-                    $this->flash('success', 'Propiedad actualizada correctamente.');
+                    
+                    if (($_SESSION['usuario_rol'] ?? '') === 'vendedor') {
+                        $this->notificarSupervisores($datos['titulo'], 'editada');
+                        $this->flash('success', 'Propiedad actualizada correctamente. Pendiente de aprobación por un supervisor.');
+                    } else {
+                        $this->flash('success', 'Propiedad actualizada correctamente.');
+                    }
+                    
                     $this->redirect('propiedad/admin');
                 }
             }
@@ -240,5 +257,39 @@ class PropiedadController extends Controller {
         if ($datos['precio'] <= 0)    $errores[] = 'El precio debe ser mayor a 0.';
         if (empty($datos['tipo']))    $errores[] = 'El tipo de propiedad es obligatorio.';
         return $errores;
+    }
+
+    private function notificarSupervisores(string $tituloPropiedad, string $accion): void {
+        $usuarioModel = new Usuario();
+        $notificacionModel = new Notificacion();
+        
+        $supervisores = $usuarioModel->findWhere('rol', 'supervisor');
+        
+        $vendedorNombre = $_SESSION['usuario_nombre'] ?? 'Un vendedor';
+        $asunto = "Propiedad pendiente de aprobación: {$tituloPropiedad}";
+        $mensajePanel = "El agente {$vendedorNombre} ha {$accion} la propiedad '{$tituloPropiedad}'. Requiere tu aprobación para ser publicada.";
+        
+        $cuerpoCorreo = "
+            <h2>Nueva Propiedad Pendiente de Aprobación</h2>
+            <p>Hola,</p>
+            <p>El agente inmobiliario <strong>{$vendedorNombre}</strong> ha {$accion} la propiedad <strong>{$tituloPropiedad}</strong>.</p>
+            <p>Por favor ingresa al panel de administración para revisarla, y decidir si se aprueba para su publicación en el catálogo.</p>
+            <p><a href='" . BASE_URL . "/propiedad/admin'>Ir a Gestión de Propiedades</a></p>
+        ";
+        
+        foreach ($supervisores as $sup) {
+            // Notificación en panel
+            $notificacionModel->insert([
+                'usuario_id' => $sup->id,
+                'titulo'     => "Propiedad pendiente: {$tituloPropiedad}",
+                'mensaje'    => $mensajePanel,
+                'enlace'     => '/propiedad/admin'
+            ]);
+            
+            // Correo electrónico
+            if (!empty($sup->email)) {
+                Mailer::send($sup->email, $asunto, $cuerpoCorreo);
+            }
+        }
     }
 }
