@@ -51,6 +51,14 @@ $numNotif = count($notificacionesNoLeidas);
         <?php endif; ?>
         
         <?php if (in_array($rolUsuario, ['admin', 'supervisor'])): ?>
+        <a href="<?= BASE_URL ?>/zona"
+           class="<?= strpos($titulo ?? '', 'Zona') !== false ? 'active' : '' ?>" style="margin-top: 5px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+          Zonas
+        </a>
+        <?php endif; ?>
+        
+        <?php if (in_array($rolUsuario, ['admin', 'supervisor'])): ?>
         <a href="<?= BASE_URL ?>/admin/prospectos"
            class="<?= strpos($titulo ?? '', 'Bandeja de Prospectos') !== false ? 'active' : '' ?>" style="margin-top: 5px;">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>

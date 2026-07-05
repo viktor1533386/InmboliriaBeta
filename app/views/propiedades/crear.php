@@ -73,12 +73,12 @@
       </div>
       <?php if (in_array($_SESSION['usuario_rol'] ?? 'admin', ['admin', 'supervisor', 'scrum_master', 'especialista_ti', 'seguridad'])): ?>
       <div class="form-group">
-        <label>Vendedor responsable</label>
-        <select name="vendedor_id">
+        <label>Zona asignada</label>
+        <select name="zona_id">
           <option value="">— Sin asignar —</option>
-          <?php foreach ($vendedores as $v): ?>
-            <option value="<?= $v->id ?>" <?= (($_POST['vendedor_id'] ?? '') == $v->id) ? 'selected' : '' ?>>
-              <?= htmlspecialchars($v->nombre . ' ' . $v->apellido) ?>
+          <?php foreach ($zonas as $z): ?>
+            <option value="<?= $z->id ?>" <?= (($_POST['zona_id'] ?? '') == $z->id) ? 'selected' : '' ?>>
+              <?= htmlspecialchars($z->nombre) ?>
             </option>
           <?php endforeach; ?>
         </select>

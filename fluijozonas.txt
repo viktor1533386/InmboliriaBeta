@@ -1,0 +1,4 @@
+el supervisor tendra una menu zonas donde las propiedades estan por zona y que a su vez cada zona tiene un vendendor asignado
+el supervisor solo gestionaria que vendedor o vendedores esta asignado a esa zona
+el usuario que envia su formulario llegaría automáticamente al vendedor asignado en las zonas. 
+si son varios vendedores en una zona como se asignaría automáticamente?

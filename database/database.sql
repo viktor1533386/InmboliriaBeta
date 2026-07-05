@@ -286,4 +286,31 @@ CREATE TABLE IF NOT EXISTS solicitudes_cierre (
     FOREIGN KEY (supervisor_id) REFERENCES usuarios(id) ON DELETE SET NULL
 );
 
+-- ============================================================
+-- SPRINT 9: ASIGNACIÓN DE PROPIEDADES POR ZONAS Y AUTO-ASIGNACIÓN
+-- ============================================================
 
+-- 1. Tabla de Zonas
+CREATE TABLE IF NOT EXISTS zonas (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 2. Tabla asociativa Zona-Vendedor (Varios vendedores por zona)
+CREATE TABLE IF NOT EXISTS zona_vendedor (
+    zona_id INT UNSIGNED NOT NULL,
+    vendedor_id INT UNSIGNED NOT NULL,
+    PRIMARY KEY (zona_id, vendedor_id),
+    FOREIGN KEY (zona_id) REFERENCES zonas(id) ON DELETE CASCADE,
+    FOREIGN KEY (vendedor_id) REFERENCES vendedores(id) ON DELETE CASCADE
+);
+
+-- 3. Modificar tabla de propiedades
+-- Primero agregamos zona_id
+ALTER TABLE propiedades ADD COLUMN zona_id INT UNSIGNED NULL AFTER vendedor_id;
+-- Luego podemos configurar la foreign key
+ALTER TABLE propiedades ADD CONSTRAINT fk_propiedades_zona FOREIGN KEY (zona_id) REFERENCES zonas(id) ON DELETE SET NULL;
+
+-- Nota: vendedor_id se mantiene en propiedades por retrocompatibilidad o por si una propiedad tiene un vendedor directo, 
+-- pero el flujo principal usará zona_id.

@@ -10,9 +10,11 @@ class Propiedad extends Model {
     // Propiedades activas con datos del vendedor (JOIN)
     public function todasActivas(): array {
         $sql = "SELECT p.*, v.nombre AS vendedor_nombre, v.apellido AS vendedor_apellido,
-                       v.telefono AS vendedor_telefono, v.foto AS vendedor_foto
+                       v.telefono AS vendedor_telefono, v.foto AS vendedor_foto,
+                       z.nombre AS zona_nombre
                 FROM propiedades p
                 LEFT JOIN vendedores v ON p.vendedor_id = v.id
+                LEFT JOIN zonas z ON p.zona_id = z.id
                 WHERE p.activo = 1
                 ORDER BY p.created_at DESC";
         return $this->raw($sql);
@@ -20,9 +22,11 @@ class Propiedad extends Model {
 
     // Todas las propiedades (activas e inactivas) con datos del vendedor
     public function todasConVendedor(int $vendedor_id = 0): array {
-        $sql = "SELECT p.*, v.nombre AS vendedor_nombre, v.apellido AS vendedor_apellido
+        $sql = "SELECT p.*, v.nombre AS vendedor_nombre, v.apellido AS vendedor_apellido,
+                       z.nombre AS zona_nombre
                 FROM propiedades p
-                LEFT JOIN vendedores v ON p.vendedor_id = v.id";
+                LEFT JOIN vendedores v ON p.vendedor_id = v.id
+                LEFT JOIN zonas z ON p.zona_id = z.id";
         if ($vendedor_id > 0) {
             $sql .= " WHERE p.vendedor_id = $vendedor_id";
         }
@@ -33,18 +37,22 @@ class Propiedad extends Model {
     // Detalle de una propiedad con vendedor
     public function detalleConVendedor(int $id): object|false {
         $sql = "SELECT p.*, v.nombre AS vendedor_nombre, v.apellido AS vendedor_apellido,
-                       v.telefono AS vendedor_telefono, v.email AS vendedor_email, v.foto AS vendedor_foto
+                       v.telefono AS vendedor_telefono, v.email AS vendedor_email, v.foto AS vendedor_foto,
+                       z.nombre AS zona_nombre
                 FROM propiedades p
                 LEFT JOIN vendedores v ON p.vendedor_id = v.id
+                LEFT JOIN zonas z ON p.zona_id = z.id
                 WHERE p.id = ? LIMIT 1";
         return $this->rawOne($sql, [$id]);
     }
 
     // Propiedades por tipo
     public function porTipo(string $tipo): array {
-        $sql = "SELECT p.*, v.nombre AS vendedor_nombre, v.apellido AS vendedor_apellido
+        $sql = "SELECT p.*, v.nombre AS vendedor_nombre, v.apellido AS vendedor_apellido,
+                       z.nombre AS zona_nombre
                 FROM propiedades p
                 LEFT JOIN vendedores v ON p.vendedor_id = v.id
+                LEFT JOIN zonas z ON p.zona_id = z.id
                 WHERE p.activo = 1 AND p.tipo = ?
                 ORDER BY p.created_at DESC";
         return $this->raw($sql, [$tipo]);
@@ -52,9 +60,11 @@ class Propiedad extends Model {
 
     // Últimas N propiedades para el home
     public function ultimas(int $limit = 6): array {
-        $sql = "SELECT p.*, v.nombre AS vendedor_nombre, v.apellido AS vendedor_apellido
+        $sql = "SELECT p.*, v.nombre AS vendedor_nombre, v.apellido AS vendedor_apellido,
+                       z.nombre AS zona_nombre
                 FROM propiedades p
                 LEFT JOIN vendedores v ON p.vendedor_id = v.id
+                LEFT JOIN zonas z ON p.zona_id = z.id
                 WHERE p.activo = 1
                 ORDER BY p.created_at DESC
                 LIMIT ?";

@@ -6,15 +6,18 @@ require_once APP_ROOT . '/core/Controller.php';
 require_once APP_ROOT . '/core/Middleware.php';
 require_once APP_ROOT . '/app/models/Propiedad.php';
 require_once APP_ROOT . '/app/models/Vendedor.php';
+require_once APP_ROOT . '/app/models/Zona.php';
 
 class PropiedadController extends Controller {
 
     private Propiedad $propiedad;
     private Vendedor  $vendedor;
+    private Zona      $zona;
 
     public function __construct() {
         $this->propiedad = new Propiedad();
         $this->vendedor  = new Vendedor();
+        $this->zona      = new Zona();
     }
 
     // ── PÚBLICO ──────────────────────────────────────────────
@@ -100,11 +103,11 @@ class PropiedadController extends Controller {
             }
         }
 
-        $vendedores = $this->vendedor->listaParaSelect();
+        $zonas = $this->zona->findAll();
         $this->render('propiedades/crear', [
-            'titulo'     => 'Nueva Propiedad',
-            'vendedores' => $vendedores,
-            'errores'    => $errores,
+            'titulo'  => 'Nueva Propiedad',
+            'zonas'   => $zonas,
+            'errores' => $errores,
         ]);
     }
 
@@ -152,12 +155,12 @@ class PropiedadController extends Controller {
             }
         }
 
-        $vendedores = $this->vendedor->listaParaSelect();
+        $zonas = $this->zona->findAll();
         $this->render('propiedades/editar', [
-            'titulo'     => 'Editar Propiedad',
-            'propiedad'  => $propiedad,
-            'vendedores' => $vendedores,
-            'errores'    => $errores,
+            'titulo'    => 'Editar Propiedad',
+            'propiedad' => $propiedad,
+            'zonas'     => $zonas,
+            'errores'   => $errores,
         ]);
     }
 
@@ -196,6 +199,7 @@ class PropiedadController extends Controller {
             'metros2'          => (float) ($_POST['metros2']                 ?? 0),
             'direccion'        => $this->sanitize($_POST['direccion']        ?? ''),
             'vendedor_id'      => empty($_POST['vendedor_id']) ? null : (int) $_POST['vendedor_id'],
+            'zona_id'          => empty($_POST['zona_id']) ? null : (int) $_POST['zona_id'],
             'activo'           => isset($_POST['activo']) ? 1 : 0,
             'estado'           => $this->sanitize($_POST['estado']           ?? 'Disponible'),
         ];
