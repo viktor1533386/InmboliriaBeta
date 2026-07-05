@@ -392,6 +392,8 @@ class AdminController extends Controller {
         $rol = $_SESSION['usuario_rol'] ?? '';
         if (in_array($rol, ['scrum_master', 'especialista_ti', 'seguridad'])) {
             $this->redirect('ticket/index');
+        } elseif ($rol === 'vendedor') {
+            $this->redirect('vendedor/dashboard');
         } else {
             $this->redirect('admin/dashboard');
         }
@@ -412,6 +414,8 @@ class AdminController extends Controller {
         $rol = $_SESSION['usuario_rol'] ?? '';
         if (in_array($rol, ['scrum_master', 'especialista_ti', 'seguridad'])) {
             $this->redirect('ticket/index');
+        } elseif ($rol === 'vendedor') {
+            $this->redirect('vendedor/dashboard');
         } else {
             $this->redirect('admin/dashboard');
         }

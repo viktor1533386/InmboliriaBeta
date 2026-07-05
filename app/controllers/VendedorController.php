@@ -581,7 +581,8 @@ class VendedorController extends Controller {
                         $notifModel->insert([
                             'usuario_id' => $vData->usuario_id,
                             'titulo' => 'Nueva nota del Supervisor',
-                            'mensaje' => "Un supervisor dejó una nota en el prospecto {$prospecto->nombre}: " . substr($comentario, 0, 50) . "..."
+                            'mensaje' => "Un supervisor dejó una nota en el prospecto {$prospecto->nombre}: " . substr($comentario, 0, 50) . "...",
+                            'enlace' => BASE_URL . '/vendedor/detalle/' . $prospecto->id
                         ]);
                     }
                 }
@@ -627,7 +628,8 @@ class VendedorController extends Controller {
                     $notifModel->insert([
                         'usuario_id' => $vData->usuario_id,
                         'titulo' => 'Nuevo prospecto asignado',
-                        'mensaje' => "El supervisor te ha asignado el prospecto: {$prospecto->nombre}."
+                        'mensaje' => "El supervisor te ha asignado el prospecto: {$prospecto->nombre}.",
+                        'enlace' => BASE_URL . '/vendedor/detalle/' . $prospecto->id
                     ]);
                 }
                 
