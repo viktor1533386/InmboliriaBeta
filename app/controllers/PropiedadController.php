@@ -218,7 +218,7 @@ class PropiedadController extends Controller {
     // GET /propiedad/aprobar/{id}
     public function aprobar(string $id = '0'): void {
         Middleware::requireRole(['admin', 'supervisor']);
-        $this->propiedad->update((int)$id, ['estado_aprobacion' => 'Aprobado']);
+        $this->propiedad->update((int)$id, ['estado_aprobacion' => 'Aprobado', 'activo' => 1]);
         $this->flash('success', 'Propiedad aprobada exitosamente y ahora es visible en el catálogo.');
         $this->redirect('propiedad/admin');
     }
@@ -226,7 +226,7 @@ class PropiedadController extends Controller {
     // GET /propiedad/rechazar/{id}
     public function rechazar(string $id = '0'): void {
         Middleware::requireRole(['admin', 'supervisor']);
-        $this->propiedad->update((int)$id, ['estado_aprobacion' => 'Rechazado']);
+        $this->propiedad->update((int)$id, ['estado_aprobacion' => 'Rechazado', 'activo' => 0]);
         $this->flash('success', 'Propiedad rechazada. No será visible en el catálogo.');
         $this->redirect('propiedad/admin');
     }
